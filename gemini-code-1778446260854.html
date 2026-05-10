@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Archive App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a5568; /* 落ち着いたメインカラー */
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-color: #2d3748;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        /* 入力エリアのスタイル */
+        .input-section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* リスト表示エリア */
+        .info-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 10px;
+            border-left: 5px solid var(--primary-color);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .info-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+        }
+
+        .info-card p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        .delete-btn {
+            background: none;
+            color: #e53e3e;
+            font-size: 0.8rem;
+            width: auto;
+            padding: 5px;
+            margin-top: 10px;
+            font-weight: normal;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>My Personal Archive</h1>
+
+    <div class="input-section">
+        <input type="text" id="titleInput" placeholder="タイトルを入力">
+        <textarea id="contentInput" rows="3" placeholder="内容を入力（後から変更可能）"></textarea>
+        <button onclick="saveInfo()">情報を保存する</button>
+    </div>
+
+    <div id="infoList"></div>
+</div>
+
+<script>
+    // 起動時に保存されたデータを読み込む
+    window.onload = displayInfo;
+
+    function saveInfo() {
+        const title = document.getElementById('titleInput').value;
+        const content = document.getElementById('contentInput').value;
+
+        if (!title || !content) {
+            alert("項目を入力してください");
+            return;
+        }
+
+        const infoObj = {
+            id: Date.now(),
+            title: title,
+            content: content,
+            date: new Date().toLocaleString()
+        };
+
+        let infoList = JSON.parse(localStorage.getItem('myAppInfo') || '[]');
+        infoList.unshift(infoObj); // 新しいものを上に
+        localStorage.setItem('myAppInfo', JSON.stringify(infoList));
+
+        // 入力をリセット
+        document.getElementById('titleInput').value = '';
+        document.getElementById('contentInput').value = '';
+        
+        displayInfo();
+    }
+
+    function displayInfo() {
+        const listArea = document.getElementById('infoList');
+        const infoList = JSON.parse(localStorage.getItem('myAppInfo') || '[]');
+        
+        listArea.innerHTML = '';
+
+        infoList.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'info-card';
+            card.innerHTML = `
+                <h3>${item.title}</h3>
+                <p>${item.content}</p>
+                <small>${item.date}</small>
+                <button class="delete-btn" onclick="deleteInfo(${item.id})">削除</button>
+            `;
+            listArea.appendChild(card);
+        });
+    }
+
+    function deleteInfo(id) {
+        let infoList = JSON.parse(localStorage.getItem('myAppInfo') || '[]');
+        infoList = infoList.filter(item => item.id !== id);
+        localStorage.setItem('myAppInfo', JSON.stringify(infoList));
+        displayInfo();
+    }
+</script>
+
+</body>
+</html>
